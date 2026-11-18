@@ -1,0 +1,1042 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BAYI IMMO | Trouvez votre bien immobilier d'exception</title>
+    <!-- Chargement de Tailwind CSS (version épinglée) -->
+    <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+    <!-- Police Google Fonts : Inter & Plus Jakarta Sans -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Plus+Jakarta+Sans:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Icônes Lucide (version épinglée) -->
+    <script src="https://cdn.jsdelivr.net/npm/lucide@0.460.0/dist/umd/lucide.min.js"></script>
+    
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                        display: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 transition-colors duration-300 antialiased selection:bg-primary-600 selection:text-white">
+
+    <!-- NOTIFICATION TOAST (Remplace alert()) -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- BARRE DE NAVIGATION -->
+    <header class="sticky top-0 z-40 w-full backdrop-blur-md bg-white/85 dark:bg-slate-900/85 border-b border-slate-200 dark:border-slate-800 transition-colors">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-20">
+                <!-- Logo -->
+                <a href="#" class="flex items-center gap-2.5 group">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-primary-600 to-indigo-500 flex items-center justify-center text-white shadow-lg shadow-primary-500/30 group-hover:scale-105 transition-transform">
+                        <i data-lucide="building-2" class="w-6 h-6"></i>
+                    </div>
+                    <span class="font-display font-extrabold text-xl tracking-tight text-slate-900 dark:text-white">
+                        BAYI <span class="text-primary-600">IMMO</span>
+                    </span>
+                </a>
+
+                <!-- Navigation Desktop -->
+                <nav class="hidden md:flex items-center gap-8 font-medium text-sm text-slate-600 dark:text-slate-300">
+                    <a href="#catalogue" onclick="quickFilter('all')" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Tous les biens</a>
+                    <a href="#catalogue" onclick="quickFilter('Vente')" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Acheter</a>
+                    <a href="#catalogue" onclick="quickFilter('Location')" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Louer</a>
+                    <a href="#estimation" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Estimer un bien</a>
+                    <a href="#contact-agence" class="hover:text-primary-600 dark:hover:text-primary-400 transition-colors">Contact</a>
+                </nav>
+
+                <!-- Actions Droite -->
+                <div class="flex items-center gap-2 sm:gap-3">
+                    <!-- Bouton Favoris -->
+                    <button onclick="toggleFavoritesModal()" class="relative p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Mes favoris">
+                        <i data-lucide="heart" class="w-5 h-5"></i>
+                        <span id="fav-badge" class="hidden absolute top-1.5 right-1.5 w-4 h-4 rounded-full bg-rose-500 text-white text-[10px] font-bold flex items-center justify-center">0</span>
+                    </button>
+
+                    <!-- Bouton Thème Sombre/Clair -->
+                    <button onclick="toggleTheme()" class="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors" aria-label="Changer le thème">
+                        <i data-lucide="moon" class="w-5 h-5 dark:hidden"></i>
+                        <i data-lucide="sun" class="w-5 h-5 hidden dark:block text-amber-400"></i>
+                    </button>
+
+                    <!-- Bouton Publier une annonce -->
+                    <button onclick="openPublishModal()" class="hidden sm:flex items-center gap-2 bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shadow-md shadow-primary-600/20 transition-all active:scale-95">
+                        <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                        <span>Déposer une annonce</span>
+                    </button>
+
+                    <!-- Menu Mobile Button -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Menu Mobile Déroulant -->
+        <div id="mobile-menu" class="hidden md:hidden border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 px-4 pt-3 pb-6 space-y-3">
+            <a href="#catalogue" onclick="quickFilter('all'); toggleMobileMenu()" class="block py-2 px-3 rounded-lg font-medium hover:bg-slate-100 dark:hover:bg-slate-800">Tous les biens</a>
+            <a href="#catalogue" onclick="quickFilter('Vente'); toggleMobileMenu()" class="block py-2 px-3 rounded-lg font-medium hover:bg-slate-100 dark:hover:bg-slate-800">Acheter</a>
+            <a href="#catalogue" onclick="quickFilter('Location'); toggleMobileMenu()" class="block py-2 px-3 rounded-lg font-medium hover:bg-slate-100 dark:hover:bg-slate-800">Louer</a>
+            <a href="#estimation" onclick="toggleMobileMenu()" class="block py-2 px-3 rounded-lg font-medium hover:bg-slate-100 dark:hover:bg-slate-800">Estimer un bien</a>
+            <button onclick="openPublishModal(); toggleMobileMenu()" class="w-full flex items-center justify-center gap-2 bg-primary-600 text-white py-3 rounded-xl font-semibold text-sm mt-2">
+                <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <span>Déposer une annonce</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- SECTION HERO & MOTEUR DE RECHERCHE -->
+    <section class="relative overflow-hidden bg-slate-900 text-white py-16 sm:py-24 lg:py-28">
+        <!-- Image de fond avec superposition -->
+        <div class="absolute inset-0 z-0">
+            <img src="https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=2000&q=80" 
+                 onerror="this.onerror=null; this.src='https://placehold.co/1920x1080/0f172a/ffffff?text=BAYI+IMMO'"
+                 alt="Villa moderne de luxe" 
+                 class="w-full h-full object-cover opacity-35 scale-105">
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-900/60 to-slate-900/80"></div>
+        </div>
+
+        <div class="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <span class="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/10 backdrop-blur-md border border-white/15 text-xs sm:text-sm font-medium text-primary-200 mb-6">
+                <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+                Plus de 1 200 propriétés exclusives disponibles
+            </span>
+            <h1 class="font-display font-extrabold text-3xl sm:text-5xl lg:text-6xl tracking-tight max-w-4xl mx-auto leading-tight mb-6">
+                Trouvez l'adresse idéale pour votre <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary-400 to-indigo-300">nouvelle vie</span>
+            </h1>
+            <p class="text-slate-300 text-base sm:text-lg max-w-2xl mx-auto mb-10">
+                Appartements contemporains, villas d'architecte ou locaux commerciaux : explorez les meilleures opportunités immobilières sélectionnées par nos experts.
+            </p>
+
+            <!-- Barre de Recherche Avancée -->
+            <div class="max-w-5xl mx-auto bg-white dark:bg-slate-900 p-3 sm:p-4 rounded-2xl shadow-2xl border border-slate-200/20 text-left">
+                <form id="search-form" onsubmit="event.preventDefault(); applyFilters();" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                    <!-- Transaction -->
+                    <div class="bg-slate-50 dark:bg-slate-800/80 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Projet</label>
+                        <select id="filter-transaction" class="w-full bg-transparent text-slate-900 dark:text-white font-semibold text-sm focus:outline-none cursor-pointer">
+                            <option value="all" class="dark:bg-slate-800">Acheter ou Louer</option>
+                            <option value="Vente" class="dark:bg-slate-800">Acheter</option>
+                            <option value="Location" class="dark:bg-slate-800">Louer</option>
+                        </select>
+                    </div>
+
+                    <!-- Type de bien -->
+                    <div class="bg-slate-50 dark:bg-slate-800/80 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Type de bien</label>
+                        <select id="filter-type" class="w-full bg-transparent text-slate-900 dark:text-white font-semibold text-sm focus:outline-none cursor-pointer">
+                            <option value="all" class="dark:bg-slate-800">Tous les types</option>
+                            <option value="Appartement" class="dark:bg-slate-800">Appartement</option>
+                            <option value="Villa" class="dark:bg-slate-800">Villa / Maison</option>
+                            <option value="Penthouse" class="dark:bg-slate-800">Penthouse / Duplex</option>
+                            <option value="Bureau" class="dark:bg-slate-800">Bureau / Commerce</option>
+                        </select>
+                    </div>
+
+                    <!-- Localisation -->
+                    <div class="bg-slate-50 dark:bg-slate-800/80 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Ville ou Quartier</label>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="map-pin" class="w-4 h-4 text-primary-600 shrink-0"></i>
+                            <input type="text" id="filter-location" placeholder="Ex: Paris, Lyon, Bord de mer..." class="w-full bg-transparent text-slate-900 dark:text-white font-medium text-sm placeholder:text-slate-400 focus:outline-none">
+                        </div>
+                    </div>
+
+                    <!-- Budget Max -->
+                    <div class="bg-slate-50 dark:bg-slate-800/80 px-3.5 py-2.5 rounded-xl border border-slate-200 dark:border-slate-700">
+                        <label class="block text-[11px] font-semibold uppercase tracking-wider text-slate-400 mb-1">Budget Max (€)</label>
+                        <input type="number" id="filter-max-price" placeholder="Illimité" min="0" step="500" class="w-full bg-transparent text-slate-900 dark:text-white font-semibold text-sm placeholder:text-slate-400 focus:outline-none">
+                    </div>
+
+                    <!-- Bouton Rechercher -->
+                    <button type="submit" class="w-full h-full min-h-[54px] bg-primary-600 hover:bg-primary-700 text-white font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary-600/30 transition-all active:scale-95">
+                        <i data-lucide="search" class="w-5 h-5"></i>
+                        <span>Rechercher</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- STATISTIQUES RAPIDES -->
+    <section class="border-b border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900/50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+                <div>
+                    <p class="font-display font-extrabold text-2xl sm:text-3xl text-primary-600">98%</p>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Clients satisfaits</p>
+                </div>
+                <div>
+                    <p class="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white">450+</p>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Biens vendus cette année</p>
+                </div>
+                <div>
+                    <p class="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white">18 jours</p>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Délai moyen de vente</p>
+                </div>
+                <div>
+                    <p class="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white">24/7</p>
+                    <p class="text-xs sm:text-sm text-slate-500 dark:text-slate-400 mt-1">Accompagnement dédié</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CATALOGUE DES BIENS IMMOBILIERS -->
+    <main id="catalogue" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-14 sm:py-20">
+        <!-- En-tête de section et Tri -->
+        <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-10">
+            <div>
+                <h2 class="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white">
+                    Nos biens disponibles
+                </h2>
+                <p id="results-count" class="text-slate-500 dark:text-slate-400 text-sm mt-1">
+                    Chargement des annonces...
+                </p>
+            </div>
+
+            <div class="flex flex-wrap items-center gap-3">
+                <button onclick="resetFilters()" id="reset-filters-btn" class="hidden text-sm font-medium text-primary-600 hover:underline px-2 py-1">
+                    Réinitialiser les filtres
+                </button>
+                <div class="flex items-center gap-2 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 px-3.5 py-2 rounded-xl">
+                    <i data-lucide="arrow-up-down" class="w-4 h-4 text-slate-400"></i>
+                    <select id="sort-select" onchange="applyFilters()" class="bg-transparent text-sm font-medium text-slate-700 dark:text-slate-200 focus:outline-none cursor-pointer">
+                        <option value="featured" class="dark:bg-slate-900">Trier par : Pertinence</option>
+                        <option value="price-asc" class="dark:bg-slate-900">Prix : Croissant</option>
+                        <option value="price-desc" class="dark:bg-slate-900">Prix : Décroissant</option>
+                        <option value="surface-desc" class="dark:bg-slate-900">Surface : Plus grand</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grille des Propriétés -->
+        <div id="properties-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Les cartes seront injectées dynamiquement par JavaScript -->
+        </div>
+
+        <!-- État vide si aucun résultat -->
+        <div id="empty-state" class="hidden text-center py-16 bg-white dark:bg-slate-900 rounded-3xl border border-slate-200 dark:border-slate-800">
+            <div class="w-16 h-16 rounded-2xl bg-slate-100 dark:bg-slate-800 text-slate-400 flex items-center justify-center mx-auto mb-4">
+                <i data-lucide="search-x" class="w-8 h-8"></i>
+            </div>
+            <h3 class="font-display font-bold text-xl text-slate-900 dark:text-white mb-2">Aucun bien ne correspond à vos critères</h3>
+            <p class="text-slate-500 dark:text-slate-400 max-w-md mx-auto mb-6 text-sm">
+                Essayez d'élargir votre zone géographique, d'augmenter votre budget ou de réinitialiser les filtres.
+            </p>
+            <button onclick="resetFilters()" class="bg-primary-600 hover:bg-primary-700 text-white font-semibold px-6 py-3 rounded-xl text-sm transition-colors">
+                Voir tous les biens
+            </button>
+        </div>
+    </main>
+
+    <!-- SECTION ESTIMATEUR EN LIGNE -->
+    <section id="estimation" class="bg-slate-100 dark:bg-slate-900/80 border-y border-slate-200 dark:border-slate-800 py-16 sm:py-24">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+                <div class="lg:col-span-6 space-y-6">
+                    <span class="inline-block px-3 py-1 rounded-lg bg-primary-100 dark:bg-primary-900/40 text-primary-700 dark:text-primary-300 font-semibold text-xs uppercase tracking-wider">
+                        Simulateur Instantané
+                    </span>
+                    <h2 class="font-display font-extrabold text-3xl sm:text-4xl text-slate-900 dark:text-white leading-tight">
+                        Estimez la valeur de votre bien en quelques secondes
+                    </h2>
+                    <p class="text-slate-600 dark:text-slate-300 leading-relaxed">
+                        Notre algorithme analyse les transactions récentes du marché pour vous fournir une fourchette d'estimation fiable et gratuite, sans engagement.
+                    </p>
+                    <ul class="space-y-3 text-sm text-slate-600 dark:text-slate-300">
+                        <li class="flex items-center gap-3">
+                            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i>
+                            <span>Données actualisées en temps réel selon le standing</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <i data-lucide="check-circle-2" class="w-5 h-5 text-emerald-500 shrink-0"></i>
+                            <span>Affinage possible avec un conseiller certifié</span>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="lg:col-span-6">
+                    <div class="bg-white dark:bg-slate-900 p-6 sm:p-8 rounded-3xl shadow-xl border border-slate-200 dark:border-slate-800">
+                        <form onsubmit="event.preventDefault(); calculateEstimation();" class="space-y-5">
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1.5">Type de bien</label>
+                                    <select id="est-type" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:border-primary-500">
+                                        <option value="4200">Appartement</option>
+                                        <option value="5100">Villa / Maison</option>
+                                        <option value="6500">Penthouse / Luxe</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1.5">Surface habitable (m²)</label>
+                                    <input type="number" id="est-surface" value="85" min="10" max="2000" required class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:border-primary-500">
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1.5">Nombre de pièces</label>
+                                    <input type="number" id="est-rooms" value="4" min="1" max="20" required class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:border-primary-500">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1.5">État général</label>
+                                    <select id="est-condition" class="w-full px-4 py-3 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm font-medium focus:outline-none focus:border-primary-500">
+                                        <option value="1.15">Neuf / Rénové architecte</option>
+                                        <option value="1.0" selected>Bon état</option>
+                                        <option value="0.85">À rafraîchir</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="w-full bg-slate-900 dark:bg-primary-600 hover:bg-slate-800 dark:hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl transition-all shadow-md">
+                                Calculer l'estimation gratuite
+                            </button>
+                        </form>
+
+                        <!-- Résultat de l'estimation -->
+                        <div id="est-result" class="hidden mt-6 p-5 rounded-2xl bg-primary-50 dark:bg-primary-950/50 border border-primary-200 dark:border-primary-800/60 text-center">
+                            <p class="text-xs font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400 mb-1">Valeur estimée de votre bien</p>
+                            <p id="est-price-range" class="font-display font-extrabold text-2xl sm:text-3xl text-slate-900 dark:text-white"></p>
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Estimation indicative basée sur le prix moyen au m².</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER / CONTACT AGENCE -->
+    <footer id="contact-agence" class="bg-slate-950 text-slate-300 pt-16 pb-10">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-slate-800">
+                <div class="space-y-4">
+                    <div class="flex items-center gap-2.5">
+                        <div class="w-9 h-9 rounded-xl bg-primary-600 flex items-center justify-center text-white">
+                            <i data-lucide="building-2" class="w-5 h-5"></i>
+                        </div>
+                        <span class="font-display font-extrabold text-xl text-white">BAYI IMMO</span>
+                    </div>
+                    <p class="text-sm text-slate-400 leading-relaxed">
+                        Votre partenaire de confiance pour l'achat, la vente et la location de biens immobiliers de caractère.
+                    </p>
+                </div>
+
+                <div>
+                    <h4 class="font-display font-bold text-white mb-4">Navigation</h4>
+                    <ul class="space-y-2.5 text-sm text-slate-400">
+                        <li><a href="#catalogue" onclick="quickFilter('Vente')" class="hover:text-white transition-colors">Biens à vendre</a></li>
+                        <li><a href="#catalogue" onclick="quickFilter('Location')" class="hover:text-white transition-colors">Biens à louer</a></li>
+                        <li><a href="#estimation" class="hover:text-white transition-colors">Estimation en ligne</a></li>
+                        <li><button onclick="openPublishModal()" class="hover:text-white transition-colors">Vendre votre bien</button></li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-display font-bold text-white mb-4">Nous contacter</h4>
+                    <ul class="space-y-2.5 text-sm text-slate-400">
+                        <li class="flex items-center gap-2.5">
+                            <i data-lucide="map-pin" class="w-4 h-4 text-primary-500"></i>
+                            <span>24 Avenue des Champs, 75008 Paris</span>
+                        </li>
+                        <li class="flex items-center gap-2.5">
+                            <i data-lucide="phone" class="w-4 h-4 text-primary-500"></i>
+                            <a href="tel:+242066869256" class="hover:text-white transition-colors">+242066869256</a>
+                        </li>
+                        <li class="flex items-center gap-2.5">
+                            <i data-lucide="mail" class="w-4 h-4 text-primary-500"></i>
+                            <a href="mailto:chadrackbayidikila150@gmail.com" class="hover:text-white transition-colors break-all">chadrackbayidikila150@gmail.com</a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div>
+                    <h4 class="font-display font-bold text-white mb-4">Alerte Nouveautés</h4>
+                    <p class="text-sm text-slate-400 mb-3">Recevez nos exclusivités avant leur diffusion publique.</p>
+                    <form onsubmit="event.preventDefault(); showToast('Inscription à l\'alerte confirmée !', 'success'); this.reset();" class="flex gap-2">
+                        <input type="email" required placeholder="Votre email" class="w-full px-3.5 py-2.5 rounded-xl bg-slate-900 border border-slate-800 text-sm text-white focus:outline-none focus:border-primary-500">
+                        <button type="submit" class="bg-primary-600 hover:bg-primary-700 text-white px-4 py-2.5 rounded-xl font-semibold text-sm shrink-0 transition-colors">
+                            OK
+                        </button>
+                    </form>
+                </div>
+            </div>
+            <div class="pt-8 flex flex-col sm:flex-row justify-between items-center gap-4 text-xs text-slate-500">
+                <p>&copy; 2026 BAYI IMMO. Tous droits réservés.</p>
+                <div class="flex gap-6">
+                    <a href="#" class="hover:text-slate-300">Mentions légales</a>
+                    <a href="#" class="hover:text-slate-300">Confidentialité</a>
+                    <a href="#" class="hover:text-slate-300">Barème d'honoraires</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- MODALE 1 : DÉTAILS D'UN BIEN & PRISE DE RENDEZ-VOUS -->
+    <div id="property-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="relative w-full max-w-4xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 overflow-hidden my-8">
+            <button onclick="closeModal('property-modal')" class="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/90 dark:bg-slate-800/90 text-slate-800 dark:text-white flex items-center justify-center shadow-md hover:scale-105 transition-transform">
+                <i data-lucide="x" class="w-5 h-5"></i>
+            </button>
+            <div id="property-modal-content">
+                <!-- Contenu injecté dynamiquement -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE 2 : LISTE DES FAVORIS -->
+    <div id="favorites-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="relative w-full max-w-2xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
+                <div class="flex items-center gap-2.5">
+                    <i data-lucide="heart" class="w-6 h-6 text-rose-500 fill-rose-500"></i>
+                    <h3 class="font-display font-bold text-xl">Mes biens sauvegardés</h3>
+                </div>
+                <button onclick="closeModal('favorites-modal')" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div id="favorites-list" class="py-6 space-y-4 max-h-[60vh] overflow-y-auto">
+                <!-- Liste injectée dynamiquement -->
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALE 3 : PUBLIER UNE ANNONCE -->
+    <div id="publish-modal" class="hidden fixed inset-0 z-50 overflow-y-auto bg-slate-950/75 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="relative w-full max-w-xl bg-white dark:bg-slate-900 rounded-3xl shadow-2xl border border-slate-200 dark:border-slate-800 p-6 sm:p-8 my-8">
+            <div class="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800 mb-6">
+                <h3 class="font-display font-bold text-xl">Publier un nouveau bien</h3>
+                <button onclick="closeModal('publish-modal')" class="p-2 rounded-xl hover:bg-slate-100 dark:hover:bg-slate-800">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <form onsubmit="handleNewProperty(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Titre de l'annonce</label>
+                    <input type="text" id="new-title" required placeholder="Ex: Appartement lumineux avec terrasse" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Transaction</label>
+                        <select id="new-transaction" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                            <option value="Vente">Vente</option>
+                            <option value="Location">Location</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Type de bien</label>
+                        <select id="new-type" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                            <option value="Appartement">Appartement</option>
+                            <option value="Villa">Villa</option>
+                            <option value="Penthouse">Penthouse</option>
+                            <option value="Bureau">Bureau</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Ville / Quartier</label>
+                        <input type="text" id="new-location" required placeholder="Ex: Lyon 6ème" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Prix (€)</label>
+                        <input type="number" id="new-price" required min="100" placeholder="Ex: 450000" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                    </div>
+                </div>
+                <div class="grid grid-cols-3 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Surface (m²)</label>
+                        <input type="number" id="new-surface" required min="10" value="75" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Chambres</label>
+                        <input type="number" id="new-beds" required min="0" value="2" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Salles d'eau</label>
+                        <input type="number" id="new-baths" required min="1" value="1" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm">
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Description</label>
+                    <textarea id="new-desc" rows="3" required placeholder="Décrivez les atouts du bien (exposition, prestations, proximité...)" class="w-full px-4 py-2.5 rounded-xl bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-sm"></textarea>
+                </div>
+                <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl shadow-lg transition-all">
+                    Mettre en ligne l'annonce
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <!-- LOGIQUE JAVASCRIPT DE L'APPLICATION -->
+    <script>
+        // --- 1. BASE DE DONNÉES INITIALE DES BIENS ---
+        let properties = [
+            {
+                id: 1,
+                title: "Villa Contemporaine avec Piscine Miroir",
+                transaction: "Vente",
+                type: "Villa",
+                location: "Cannes, Côte d'Azur",
+                price: 1450000,
+                surface: 240,
+                beds: 4,
+                baths: 3,
+                dpe: "A",
+                badge: "Exclusivité",
+                image: "https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1000&q=80",
+                description: "Magnifique villa d'architecte offrant une vue dégagée, vaste séjour cathédrale baigné de lumière, cuisine équipée haut de gamme, piscine chauffée et jardin paysager sans vis-à-vis.",
+                features: ["Piscine chauffée", "Domotique intégrale", "Double garage", "Climatisation réversible"],
+                agent: { name: "Claire Beaumont", role: "Directrice d'agence", phone: "06 12 34 56 78" }
+            },
+            {
+                id: 2,
+                title: "Appartement Haussmannien Rénové",
+                transaction: "Vente",
+                type: "Appartement",
+                location: "Paris 16ème, Trocadéro",
+                price: 980000,
+                surface: 112,
+                beds: 3,
+                baths: 2,
+                dpe: "C",
+                badge: "Coup de cœur",
+                image: "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1000&q=80",
+                description: "Superbe appartement familial au 3ème étage avec ascenseur. Parquet point de Hongrie, moulures d'époque, cheminées en marbre et cuisine dinatoire contemporaine.",
+                features: ["Parquet & Moulures", "Balcon filant", "Cave voûtée", "Gardien à demeure"],
+                agent: { name: "Marc Lefèvre", role: "Consultant Senior", phone: "06 23 45 67 89" }
+            },
+            {
+                id: 3,
+                title: "Penthouse Panoramique & Rooftop Privé",
+                transaction: "Location",
+                type: "Penthouse",
+                location: "Lyon 6ème, Foch",
+                price: 3200,
+                surface: 145,
+                beds: 3,
+                baths: 2,
+                dpe: "B",
+                badge: "Nouveau",
+                image: "https://images.unsplash.com/photo-1512917774080-9991f1c4c750?auto=format&fit=crop&w=1000&q=80",
+                description: "Dernier étage unique avec terrasse panoramique de 60 m². Prestations d'exception, suite parentale avec dressing sur mesure et deux places de stationnement en sous-sol.",
+                features: ["Terrasse 60 m²", "Vue panoramique", "Ascenseur privatif", "2 Parkings inclus"],
+                agent: { name: "Sophie Laurent", role: "Experte Location", phone: "06 34 56 78 90" }
+            },
+            {
+                id: 4,
+                title: "Maison de Ville avec Jardin Arboré",
+                transaction: "Vente",
+                type: "Villa",
+                location: "Bordeaux, Caudéran",
+                price: 695000,
+                surface: 155,
+                beds: 4,
+                baths: 2,
+                dpe: "B",
+                badge: null,
+                image: "https://images.unsplash.com/photo-1605276374104-dee2a0ed3cd6?auto=format&fit=crop&w=1000&q=80",
+                description: "Charmante échoppe bordelaise entièrement repensée par un architecte. Belle pièce de vie ouverte sur un jardin calme et verdoyant à proximité immédiate des écoles.",
+                features: ["Jardin 180 m²", "Suite parentale RDC", "Poêle à bois", "Proche tramway"],
+                agent: { name: "Claire Beaumont", role: "Directrice d'agence", phone: "06 12 34 56 78" }
+            },
+            {
+                id: 5,
+                title: "Loft Industriel Lumineux",
+                transaction: "Location",
+                type: "Appartement",
+                location: "Nantes, Île de Nantes",
+                price: 1650,
+                surface: 92,
+                beds: 2,
+                baths: 1,
+                dpe: "C",
+                badge: "Meublé",
+                image: "https://images.unsplash.com/photo-1560448204-e02f11c3d0e2?auto=format&fit=crop&w=1000&q=80",
+                description: "Ancien atelier réhabilité avec 4 mètres de hauteur sous plafond, verrière d'atelier, mezzanine spacieuse et décoration soignée. Idéal pour jeunes actifs ou télétravail.",
+                features: ["Hauteur 4m", "Fibre optique", "Meublé design", "Local vélos sécurisé"],
+                agent: { name: "Sophie Laurent", role: "Experte Location", phone: "06 34 56 78 90" }
+            },
+            {
+                id: 6,
+                title: "Plateau de Bureaux Standing",
+                transaction: "Location",
+                type: "Bureau",
+                location: "Paris 8ème, Saint-Lazare",
+                price: 4800,
+                surface: 180,
+                beds: 0,
+                baths: 2,
+                dpe: "B",
+                badge: "Pro",
+                image: "https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1000&q=80",
+                description: "Espace professionnel clé en main dans un immeuble haussmannien de standing. Comprend un open-space lumineux, 3 bureaux fermés, une salle de réunion et une cuisine équipée.",
+                features: ["Climatisation", "Câblage RJ45", "Contrôle d'accès", "Salle de réunion"],
+                agent: { name: "Marc Lefèvre", role: "Consultant Senior", phone: "06 23 45 67 89" }
+            }
+        ];
+
+        // Échappement HTML (les textes saisis par l'utilisateur sont insérés via innerHTML)
+        function esc(value) {
+            return String(value === null || value === undefined ? '' : value)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#39;');
+        }
+
+        // État des favoris (sauvegardé en localStorage, avec protection si indisponible)
+        const FAV_STORAGE_KEY = 'bayiimmo_favs';
+
+        function loadFavorites() {
+            try {
+                const stored = JSON.parse(localStorage.getItem(FAV_STORAGE_KEY));
+                return Array.isArray(stored) ? stored : [];
+            } catch (e) {
+                return [];
+            }
+        }
+
+        function saveFavorites() {
+            try {
+                localStorage.setItem(FAV_STORAGE_KEY, JSON.stringify(favorites));
+            } catch (e) {
+                // Stockage indisponible : les favoris restent actifs pour la session en cours
+            }
+        }
+
+        let favorites = loadFavorites();
+
+        // --- 2. INITIALISATION AU CHARGEMENT ---
+        document.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
+            updateFavBadge();
+            applyFilters();
+        });
+
+        // --- 3. RENDU DES CARTES IMMOBILIÈRES ---
+        function renderProperties(list) {
+            const grid = document.getElementById('properties-grid');
+            const emptyState = document.getElementById('empty-state');
+            const countLabel = document.getElementById('results-count');
+
+            countLabel.textContent = `${list.length} bien${list.length > 1 ? 's' : ''} disponible${list.length > 1 ? 's' : ''}`;
+
+            if (list.length === 0) {
+                grid.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            grid.innerHTML = list.map(prop => {
+                const isFav = favorites.includes(prop.id);
+                const formattedPrice = prop.price.toLocaleString('fr-FR') + (prop.transaction === 'Location' ? ' € / mois' : ' €');
+                
+                return `
+                <article class="group bg-white dark:bg-slate-900 rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-800 shadow-sm hover:shadow-xl hover:-translate-y-1 transition-all duration-300 flex flex-col">
+                    <!-- Image & Badges -->
+                    <div class="relative h-60 overflow-hidden bg-slate-200 dark:bg-slate-800 cursor-pointer" onclick="openPropertyDetails(${prop.id})">
+                        <img src="${prop.image}" 
+                             onerror="this.onerror=null; this.src='https://placehold.co/800x600/1e293b/ffffff?text=${encodeURIComponent(prop.type)}'"
+                             alt="${esc(prop.title)}" 
+                             class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500">
+                        
+                        <div class="absolute top-3.5 left-3.5 flex flex-wrap gap-2">
+                            <span class="px-3 py-1 rounded-lg text-xs font-bold uppercase tracking-wide shadow-sm ${prop.transaction === 'Vente' ? 'bg-primary-600 text-white' : 'bg-emerald-600 text-white'}">
+                                ${esc(prop.transaction)}
+                            </span>
+                            ${prop.badge ? `<span class="px-3 py-1 rounded-lg text-xs font-bold bg-slate-900/80 backdrop-blur-md text-white">${esc(prop.badge)}</span>` : ''}
+                        </div>
+
+                        <!-- Bouton Favori -->
+                        <button onclick="event.stopPropagation(); toggleFavorite(${prop.id})" 
+                                class="absolute top-3.5 right-3.5 w-10 h-10 rounded-full bg-white/90 dark:bg-slate-900/90 backdrop-blur-md flex items-center justify-center shadow-md hover:scale-110 transition-transform"
+                                aria-label="Ajouter aux favoris">
+                            <i data-lucide="heart" class="w-5 h-5 ${isFav ? 'text-rose-500 fill-rose-500' : 'text-slate-600 dark:text-slate-300'}"></i>
+                        </button>
+
+                        <!-- Prix sur l'image -->
+                        <div class="absolute bottom-0 inset-x-0 bg-gradient-to-t from-slate-950/90 via-slate-950/40 to-transparent p-4 pt-10">
+                            <p class="font-display font-extrabold text-xl text-white">${formattedPrice}</p>
+                        </div>
+                    </div>
+
+                    <!-- Contenu de la carte -->
+                    <div class="p-5 flex-1 flex flex-col justify-between">
+                        <div>
+                            <div class="flex items-center gap-1.5 text-xs font-medium text-primary-600 dark:text-primary-400 mb-1.5">
+                                <i data-lucide="map-pin" class="w-3.5 h-3.5"></i>
+                                <span>${esc(prop.location)}</span>
+                            </div>
+                            <h3 onclick="openPropertyDetails(${prop.id})" class="font-display font-bold text-lg text-slate-900 dark:text-white group-hover:text-primary-600 transition-colors cursor-pointer line-clamp-1 mb-2">
+                                ${esc(prop.title)}
+                            </h3>
+                            <p class="text-slate-500 dark:text-slate-400 text-sm line-clamp-2 mb-4">
+                                ${esc(prop.description)}
+                            </p>
+                        </div>
+
+                        <div>
+                            <!-- Caractéristiques -->
+                            <div class="flex items-center justify-between py-3 border-t border-slate-100 dark:border-slate-800 text-xs font-semibold text-slate-600 dark:text-slate-300">
+                                <span class="flex items-center gap-1.5">
+                                    <i data-lucide="maximize-2" class="w-4 h-4 text-slate-400"></i>
+                                    ${prop.surface} m²
+                                </span>
+                                ${prop.beds > 0 ? `
+                                <span class="flex items-center gap-1.5">
+                                    <i data-lucide="bed-double" class="w-4 h-4 text-slate-400"></i>
+                                    ${prop.beds} ch.
+                                </span>` : ''}
+                                <span class="flex items-center gap-1.5">
+                                    <i data-lucide="bath" class="w-4 h-4 text-slate-400"></i>
+                                    ${prop.baths} sdb.
+                                </span>
+                                <span class="px-2 py-0.5 rounded bg-slate-100 dark:bg-slate-800 text-[11px]">
+                                    DPE ${esc(prop.dpe)}
+                                </span>
+                            </div>
+
+                            <button onclick="openPropertyDetails(${prop.id})" class="w-full mt-2 py-2.5 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-primary-600 hover:text-white dark:hover:bg-primary-600 text-slate-800 dark:text-slate-200 font-semibold text-sm transition-colors">
+                                Voir le bien & Visiter
+                            </button>
+                        </div>
+                    </div>
+                </article>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        // --- 4. FILTRAGE ET TRI ---
+        function applyFilters() {
+            const transaction = document.getElementById('filter-transaction').value;
+            const type = document.getElementById('filter-type').value;
+            const location = document.getElementById('filter-location').value.trim().toLowerCase();
+            const maxPrice = parseFloat(document.getElementById('filter-max-price').value);
+            const sortBy = document.getElementById('sort-select').value;
+
+            const isFiltered = transaction !== 'all' || type !== 'all' || location !== '' || !isNaN(maxPrice);
+            document.getElementById('reset-filters-btn').classList.toggle('hidden', !isFiltered);
+
+            let filtered = properties.filter(p => {
+                if (transaction !== 'all' && p.transaction !== transaction) return false;
+                if (type !== 'all' && p.type !== type) return false;
+                if (location && !p.location.toLowerCase().includes(location) && !p.title.toLowerCase().includes(location)) return false;
+                if (!isNaN(maxPrice) && maxPrice > 0 && p.price > maxPrice) return false;
+                return true;
+            });
+
+            // Tri
+            if (sortBy === 'price-asc') filtered.sort((a, b) => a.price - b.price);
+            if (sortBy === 'price-desc') filtered.sort((a, b) => b.price - a.price);
+            if (sortBy === 'surface-desc') filtered.sort((a, b) => b.surface - a.surface);
+
+            renderProperties(filtered);
+        }
+
+        function quickFilter(transactionType) {
+            document.getElementById('filter-transaction').value = transactionType;
+            applyFilters();
+        }
+
+        function resetFilters() {
+            document.getElementById('filter-transaction').value = 'all';
+            document.getElementById('filter-type').value = 'all';
+            document.getElementById('filter-location').value = '';
+            document.getElementById('filter-max-price').value = '';
+            document.getElementById('sort-select').value = 'featured';
+            applyFilters();
+        }
+
+        // --- 5. GESTION DES FAVORIS ---
+        function toggleFavorite(id) {
+            const index = favorites.indexOf(id);
+            if (index === -1) {
+                favorites.push(id);
+                showToast('Bien ajouté à vos favoris', 'success');
+            } else {
+                favorites.splice(index, 1);
+                showToast('Bien retiré de vos favoris', 'info');
+            }
+            saveFavorites();
+            updateFavBadge();
+            applyFilters();
+            
+            // Mettre à jour la modale des favoris si ouverte
+            if (!document.getElementById('favorites-modal').classList.contains('hidden')) {
+                renderFavoritesList();
+            }
+        }
+
+        function updateFavBadge() {
+            const badge = document.getElementById('fav-badge');
+            badge.textContent = favorites.length;
+            badge.classList.toggle('hidden', favorites.length === 0);
+        }
+
+        function toggleFavoritesModal() {
+            renderFavoritesList();
+            document.getElementById('favorites-modal').classList.remove('hidden');
+        }
+
+        function renderFavoritesList() {
+            const container = document.getElementById('favorites-list');
+            const favProps = properties.filter(p => favorites.includes(p.id));
+
+            if (favProps.length === 0) {
+                container.innerHTML = `<p class="text-center text-slate-500 py-8 text-sm">Vous n'avez aucun bien sauvegardé pour le moment.</p>`;
+                return;
+            }
+
+            container.innerHTML = favProps.map(p => `
+                <div class="flex items-center justify-between gap-4 p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/70 border border-slate-200 dark:border-slate-700">
+                    <div class="flex items-center gap-3 cursor-pointer" onclick="closeModal('favorites-modal'); openPropertyDetails(${p.id})">
+                        <img src="${p.image}" class="w-16 h-16 rounded-xl object-cover shrink-0">
+                        <div>
+                            <h4 class="font-bold text-sm text-slate-900 dark:text-white line-clamp-1">${esc(p.title)}</h4>
+                            <p class="text-xs text-slate-500">${esc(p.location)} • ${p.surface} m²</p>
+                            <p class="text-sm font-extrabold text-primary-600 mt-0.5">${p.price.toLocaleString('fr-FR')} €${p.transaction === 'Location' ? '/mois' : ''}</p>
+                        </div>
+                    </div>
+                    <button onclick="toggleFavorite(${p.id})" class="p-2 text-rose-500 hover:bg-rose-50 dark:hover:bg-rose-950/50 rounded-xl" title="Supprimer">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            `).join('');
+            lucide.createIcons();
+        }
+
+        // --- 6. MODALE DÉTAILS D'UN BIEN & PRISE DE RENDEZ-VOUS ---
+        function openPropertyDetails(id) {
+            const prop = properties.find(p => p.id === id);
+            if (!prop) return;
+
+            const formattedPrice = prop.price.toLocaleString('fr-FR') + (prop.transaction === 'Location' ? ' € / mois' : ' €');
+            const content = document.getElementById('property-modal-content');
+
+            content.innerHTML = `
+                <div class="grid grid-cols-1 lg:grid-cols-12">
+                    <div class="lg:col-span-7">
+                        <div class="h-72 sm:h-96 bg-slate-200 dark:bg-slate-800">
+                            <img src="${prop.image}" alt="${esc(prop.title)}" class="w-full h-full object-cover">
+                        </div>
+                        <div class="p-6 sm:p-8 space-y-5">
+                            <div class="flex flex-wrap items-center justify-between gap-2">
+                                <span class="px-3 py-1 rounded-lg text-xs font-bold uppercase ${prop.transaction === 'Vente' ? 'bg-primary-100 text-primary-700 dark:bg-primary-900/50 dark:text-primary-300' : 'bg-emerald-100 text-emerald-700 dark:bg-emerald-900/50 dark:text-emerald-300'}">
+                                    ${esc(prop.transaction)} • ${esc(prop.type)}
+                                </span>
+                                <span class="text-sm font-medium text-slate-500 flex items-center gap-1">
+                                    <i data-lucide="map-pin" class="w-4 h-4 text-primary-600"></i> ${esc(prop.location)}
+                                </span>
+                            </div>
+
+                            <div>
+                                <h2 class="font-display font-extrabold text-2xl text-slate-900 dark:text-white">${esc(prop.title)}</h2>
+                                <p class="font-display font-extrabold text-2xl text-primary-600 mt-1">${formattedPrice}</p>
+                            </div>
+
+                            <div class="grid grid-cols-4 gap-2 p-3.5 rounded-2xl bg-slate-50 dark:bg-slate-800/80 text-center">
+                                <div>
+                                    <p class="text-xs text-slate-400">Surface</p>
+                                    <p class="font-bold text-sm mt-0.5">${prop.surface} m²</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400">Chambres</p>
+                                    <p class="font-bold text-sm mt-0.5">${prop.beds}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400">Salles d'eau</p>
+                                    <p class="font-bold text-sm mt-0.5">${prop.baths}</p>
+                                </div>
+                                <div>
+                                    <p class="text-xs text-slate-400">DPE</p>
+                                    <p class="font-bold text-sm mt-0.5">Classe ${esc(prop.dpe)}</p>
+                                </div>
+                            </div>
+
+                            <div>
+                                <h4 class="font-bold text-sm uppercase tracking-wider text-slate-400 mb-2">Description</h4>
+                                <p class="text-sm text-slate-600 dark:text-slate-300 leading-relaxed">${esc(prop.description)}</p>
+                            </div>
+
+                            <div>
+                                <h4 class="font-bold text-sm uppercase tracking-wider text-slate-400 mb-2">Prestations & Équipements</h4>
+                                <div class="flex flex-wrap gap-2">
+                                    ${prop.features.map(f => `
+                                        <span class="px-3 py-1.5 rounded-xl bg-slate-100 dark:bg-slate-800 text-xs font-medium text-slate-700 dark:text-slate-300">
+                                            ✓ ${esc(f)}
+                                        </span>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Colonne Contact Conseiller -->
+                    <div class="lg:col-span-5 bg-slate-50 dark:bg-slate-800/50 p-6 sm:p-8 border-t lg:border-t-0 lg:border-l border-slate-200 dark:border-slate-800 flex flex-col justify-between">
+                        <div>
+                            <h3 class="font-display font-bold text-lg mb-4">Planifier une visite</h3>
+                            <div class="flex items-center gap-3 p-3.5 rounded-2xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 mb-6">
+                                <div class="w-12 h-12 rounded-full bg-primary-100 dark:bg-primary-900/50 text-primary-600 flex items-center justify-center font-bold text-lg">
+                                    ${esc(prop.agent.name.charAt(0))}
+                                </div>
+                                <div>
+                                    <p class="font-bold text-sm text-slate-900 dark:text-white">${esc(prop.agent.name)}</p>
+                                    <p class="text-xs text-slate-500">${esc(prop.agent.role)}</p>
+                                    <p class="text-xs font-semibold text-primary-600 mt-0.5">${esc(prop.agent.phone)}</p>
+                                </div>
+                            </div>
+
+                            <form onsubmit="submitVisitRequest(event, ${prop.id})" class="space-y-3.5">
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">Votre nom complet</label>
+                                    <input type="text" required placeholder="Jean Dupont" class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">Email</label>
+                                    <input type="email" required placeholder="jean.dupont@email.com" class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">Téléphone</label>
+                                    <input type="tel" required placeholder="06 00 00 00 00" class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">
+                                </div>
+                                <div>
+                                    <label class="block text-xs font-semibold text-slate-500 mb-1">Disponibilités souhaitées</label>
+                                    <textarea rows="2" class="w-full px-3.5 py-2.5 rounded-xl bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-sm">Bonjour, je souhaite visiter ce bien dès que possible.</textarea>
+                                </div>
+                                <button type="submit" class="w-full bg-primary-600 hover:bg-primary-700 text-white font-bold py-3.5 rounded-xl shadow-lg shadow-primary-600/20 transition-all">
+                                    Demander une visite
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            `;
+
+            document.getElementById('property-modal').classList.remove('hidden');
+            lucide.createIcons();
+        }
+
+        function submitVisitRequest(e, id) {
+            e.preventDefault();
+            const prop = properties.find(p => p.id === id);
+            closeModal('property-modal');
+            showToast('Demande de visite envoyée à ' + (prop ? prop.agent.name : 'notre conseiller') + ' !', 'success');
+        }
+
+        // --- 7. PUBLICATION D'UNE NOUVELLE ANNONCE ---
+        function openPublishModal() {
+            document.getElementById('publish-modal').classList.remove('hidden');
+        }
+
+        function handleNewProperty(e) {
+            e.preventDefault();
+            const newProp = {
+                id: Date.now(),
+                title: document.getElementById('new-title').value,
+                transaction: document.getElementById('new-transaction').value,
+                type: document.getElementById('new-type').value,
+                location: document.getElementById('new-location').value,
+                price: parseFloat(document.getElementById('new-price').value),
+                surface: parseInt(document.getElementById('new-surface').value),
+                beds: parseInt(document.getElementById('new-beds').value),
+                baths: parseInt(document.getElementById('new-baths').value),
+                dpe: "B",
+                badge: "Nouveau",
+                image: "https://images.unsplash.com/photo-1600585154340-be6161a56a0c?auto=format&fit=crop&w=1000&q=80",
+                description: document.getElementById('new-desc').value,
+                features: ["Prestations soignées", "Lumineux", "Disponibilité immédiate"],
+                agent: { name: "Conseiller BAYI IMMO", role: "Mandataire agréé", phone: "01 86 95 00 10" }
+            };
+
+            properties.unshift(newProp);
+            e.target.reset();
+            closeModal('publish-modal');
+            resetFilters();
+            showToast('Votre annonce a été publiée avec succès !', 'success');
+            document.getElementById('catalogue').scrollIntoView({ behavior: 'smooth' });
+        }
+
+        // --- 8. SIMULATEUR D'ESTIMATION ---
+        function calculateEstimation() {
+            const basePricePerSqm = parseFloat(document.getElementById('est-type').value);
+            const surface = parseFloat(document.getElementById('est-surface').value);
+            const rooms = parseInt(document.getElementById('est-rooms').value);
+            const conditionMultiplier = parseFloat(document.getElementById('est-condition').value);
+
+            const baseEstimate = (basePricePerSqm * surface + rooms * 4500) * conditionMultiplier;
+            const lowEstimate = Math.round((baseEstimate * 0.94) / 1000) * 1000;
+            const highEstimate = Math.round((baseEstimate * 1.06) / 1000) * 1000;
+
+            const resultBox = document.getElementById('est-result');
+            document.getElementById('est-price-range').textContent = 
+                `${lowEstimate.toLocaleString('fr-FR')} € — ${highEstimate.toLocaleString('fr-FR')} €`;
+            
+            resultBox.classList.remove('hidden');
+            showToast('Estimation calculée avec succès', 'success');
+        }
+
+        // --- 9. UTILITAIRES UI (MODALES, TOASTS, THÈME) ---
+        function closeModal(modalId) {
+            document.getElementById(modalId).classList.add('hidden');
+        }
+
+        function toggleMobileMenu() {
+            document.getElementById('mobile-menu').classList.toggle('hidden');
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function showToast(message, type = 'success') {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            const bgColor = type === 'success' ? 'bg-slate-900 dark:bg-primary-600' : 'bg-slate-700';
+            
+            toast.className = `${bgColor} text-white px-4 py-3 rounded-xl shadow-lg text-sm font-medium flex items-center gap-2.5 transform transition-all duration-300 translate-y-2 opacity-0 pointer-events-auto`;
+            toast.innerHTML = `
+                <i data-lucide="${type === 'success' ? 'check-circle' : 'info'}" class="w-4 h-4 text-emerald-400 shrink-0"></i>
+                <span>${esc(message)}</span>
+            `;
+            
+            container.appendChild(toast);
+            lucide.createIcons();
+
+            requestAnimationFrame(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            });
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 300);
+            }, 3200);
+        }
+    </script>
+</body>
+</html>
